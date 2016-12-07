@@ -14,6 +14,8 @@ import java.util.concurrent.Executors;
 
 public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 
+	public boolean isFaulty=false;
+
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	private final UUID id = UUID.randomUUID();
@@ -29,7 +31,6 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	private int[] vectorClock = new int[3];
 	private static final String NAMING = "proc";
 	private boolean decided = false;
-	private boolean isDone=false;
 	private int decision;
 	private boolean ready= false;
 
@@ -76,8 +77,9 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			System.out.println("polling...");
 			createProcesses(addresses);
 		}
-		this.n = rp.length;
+		this.n = rp.length+1;
 		this.f = (n-1)/5;
+		System.out.println("n: "+n+", f: "+f);
 		synchronize();
 	}
 
@@ -97,7 +99,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	public void receiveNotification(int round, UUID senderId, int v) throws RemoteException{
-		System.out.println("\t Received Notification");
+		System.out.println("Receiving Notification");
 		Message notification = new Message(round,senderId,v);
 		int notificationRound = notification.getRound();
 		if(notificationRound < round) return;
@@ -112,9 +114,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	public void receiveProposal(int round, UUID senderId, int v) throws RemoteException{
-		System.out.println("\t Received Proposal");
-		if(decided){
-			System.out.println("Already decided!");
+		if(decided&&!isFaulty){
 			return;
 		}
 		Message proposal = new Message(round,senderId,v);
@@ -158,14 +158,16 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			if (numberOf0s > (3*f)) {
 				decision=0;
 				decided=true;
-				System.out.println("decided on: "+0);
+				if(!isFaulty)
+					System.out.println("Process Nr.:"+this.id+", decided on: "+0+", in Round: "+round);
 			}
 		} else if(numberOf1s > f) {
 			v=1;
 			if (numberOf1s > (3*f)) {
 				decision=1;
 				decided=true;
-				System.out.println("decided on: "+1);
+				if(!isFaulty)
+					System.out.println("Process Nr.:"+this.id+", decided on: "+1+", in Round: "+round);
 			}
 		} else v=(Math.random()<0.5)?0:1;
 
@@ -176,7 +178,10 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	public void broadcast(String type, int round, int value){
-		System.out.println("Round "+round+", Broadcasting a "+type+" with value "+value);
+		if(isFaulty){
+			if(Math.random()<0.5) return;
+			value = (Math.random()<0.5)?0:1;
+		}
 		Message message = new Message(round,this.id, value);
 		if(type.toLowerCase().equals("notification")){
 			for(DA_Process_RMI proc : rp){
@@ -188,6 +193,13 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 									rme.printStackTrace();
 								}});
 			}
+			executor.submit (() ->{
+							try{
+								this.receiveNotification(message.getRound(),message.getSenderId(),message.getV());
+							}
+							catch(RemoteException rme){
+								rme.printStackTrace();
+							}});
 		}
 		if(type.toLowerCase().equals("proposal")){
 			for(DA_Process_RMI proc : rp){
@@ -198,6 +210,14 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 								catch(RemoteException rme){
 								}});
 			}
+
+			executor.submit (() ->{
+							try{
+								this.receiveProposal(message.getRound(),message.getSenderId(),message.getV());
+							}
+							catch(RemoteException rme){
+								rme.printStackTrace();
+							}});
 		}
 	}
 
