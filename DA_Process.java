@@ -56,7 +56,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	public int getRound(){
 		return round;
 	}
-	
+
 	public int getV(){
 		return v;
 	}
@@ -95,7 +95,13 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		}
 	}
 
-	public void receiveNotification(Message notification) throws RemoteException{
+	public void receiveNotification(int round, UUID senderId, int v) throws RemoteException{
+		System.out.println("\t Received Notification");
+		if(decided){
+			System.out.println("Already decided!");
+			return;
+		}
+		Message notification = new Message(round,senderId,v);
 		int notificationRound = notification.getRound();
 		if(notificationRound < round) return;
 		if(notificationsQueue.get(notificationRound)==null){
@@ -108,18 +114,20 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		}
 	}
 
-	public void receiveProposal(Message proposal) throws RemoteException{
-			int proposalRound = proposal.getRound();
-			if(proposalRound < round) return;
-			if(proposalsQueue.get(proposalRound)==null){
-				proposalsQueue.put(proposalRound,new ArrayList<Message>());
-			}
-			proposalsQueue.get(proposalRound).add(proposal);
-			if(proposalsQueue.get(round).size()>=(n-f)){
-				ArrayList<Message> proposalsThisRound = proposalsQueue.get(round);
-				proposal(proposalsThisRound);
-			}
+	public void receiveProposal(int round, UUID senderId, int v) throws RemoteException{
+		System.out.println("\t Received Proposal");
+		Message proposal = new Message(round,senderId,v);
+		int proposalRound = proposal.getRound();
+		if(proposalRound < round) return;
+		if(proposalsQueue.get(proposalRound)==null){
+			proposalsQueue.put(proposalRound,new ArrayList<Message>());
 		}
+		proposalsQueue.get(proposalRound).add(proposal);
+		if(proposalsQueue.get(round).size()>=(n-f)){
+			ArrayList<Message> proposalsThisRound = proposalsQueue.get(round);
+			proposal(proposalsThisRound);
+		}
+	}
 
 	public void notification(ArrayList<Message> notifications){
 		int numberOf0s = 0;
@@ -130,9 +138,9 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			else if(notification.getV() == 1) numberOf1s++;
 		}
 
-		if(numberOf0s > ((n+f)/2)) broadcast("notification", round, 0);
-		else if(numberOf1s > ((n+f)/2)) broadcast("notification", round, 1);
-		else broadcast("notification", round, -1);
+		if(numberOf0s > ((n+f)/2)) broadcast("proposal", round, 0);
+		else if(numberOf1s > ((n+f)/2)) broadcast("proposal", round, 1);
+		else broadcast("proposal", round, -1);
 	}
 
 	public void proposal(ArrayList<Message> proposals){
@@ -149,30 +157,34 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			if (numberOf0s > (3*f)) {
 				decision=0;
 				decided=true;
+				System.out.println("decided on: "+0);
 			}
 		} else if(numberOf1s > f) {
 			v=1;
 			if (numberOf1s > (3*f)) {
 				decision=1;
 				decided=true;
+				System.out.println("decided on: "+1);
 			}
 		} else v=(Math.random()<0.5)?0:1;
 
 		round++;
 		notificationsQueue.remove(round-1);
 		proposalsQueue.remove(round-1);
-		broadcast("proposal", round, v);
+		broadcast("notification", round, v);
 	}
 
 	public void broadcast(String type, int round, int value){
+		System.out.println("Broadcasting a "+type+" with value "+value);
 		Message message = new Message(round,this.id, value);
 		if(type.toLowerCase().equals("notification")){
 			for(DA_Process_RMI proc : rp){
 				executor.submit (() ->{
 								try{
-									proc.receiveNotification(message);
+									proc.receiveNotification(message.getRound(),message.getSenderId(),message.getV());
 								}
 								catch(RemoteException rme){
+									rme.printStackTrace();
 								}});
 			}
 		}
@@ -180,7 +192,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			for(DA_Process_RMI proc : rp){
 				executor.submit (() ->{
 								try{
-									proc.receiveProposal(message);
+									proc.receiveProposal(message.getRound(),message.getSenderId(),message.getV());
 								}
 								catch(RemoteException rme){
 								}});
