@@ -123,9 +123,9 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			else if(notification.getV() == 1) numberOf1s++; 
 		}
 		
-		if(numberOf0s > ((n+f)/2)) broadcast('r',1);
-		else if(numberOf1s > ((n+f)/2)) broadcast('r', 0);
-		else broadcast('r', -1);
+		if(numberOf0s > ((n+f)/2)) broadcast("notification", round, 0);
+		else if(numberOf1s > ((n+f)/2)) broadcast("notification", round, 1);
+		else broadcast("notification", round, -1);
 	}
 	
 	public void proposal(ArrayList<Message> proposals){
@@ -137,13 +137,13 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			else if(proposal.getV() == 1) numberOf1s++; 
 		}
 		
-		if(numberOf0s > ((n+f)/2)) {
+		if(numberOf0s > f) {
 			v=0;
 			if (numberOf0s > (3*f)) {
 				decision=0;
 				decided=true;
 			}
-		} else if(numberOf1s > ((n+f)/2)) {
+		} else if(numberOf1s > f) {
 			v=1;
 			if (numberOf1s > (3*f)) {
 				decision=1;
@@ -154,10 +154,10 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		round++;
 		notificationsQueue.remove(round-1);
 		proposalsQueue.remove(round-1);
-		broadcast('p', v);
+		broadcast("proposal", round, v);
 	}
 	
-	public void broadcast(String type, int value){
+	public void broadcast(String type, int round, int value){
 		
 	}
 
