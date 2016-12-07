@@ -45,9 +45,7 @@ public class DA_Process_main {
 			localProcess.createProcesses(addresses);
 			System.out.println("Server is Ready");
 
-			localProcess.setRoundToBeCandidate(roundToBeCandidate);
-
-			localProcess.startCandidate();
+			localProcess.broadcast("notification", localProcess.getRound(), localProcess.getV() );
 
 		}catch(Exception e){
 			e.printStackTrace();

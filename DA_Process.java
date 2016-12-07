@@ -53,6 +53,13 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	public int getProcessNumber() throws RemoteException{
 		return number;
 	}
+	public int getRound(){
+		return round;
+	}
+	
+	public int getV(){
+		return v;
+	}
 
 	public void createProcesses(ArrayList<String> addresses) throws RemoteException{
 		try {
