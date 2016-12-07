@@ -88,7 +88,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		}
 	}
 
-	public void receiveNotification(Message notification){
+	public void receiveNotification(Message notification) throws RemoteException{
 		int notificationRound = notification.getRound();
 		if(notificationRound < round) return;
 		if(notificationsQueue.get(notificationRound)==null){
@@ -101,7 +101,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		}
 	}
 
-	public void receiveProposal(Message proposal){
+	public void receiveProposal(Message proposal) throws RemoteException{
 			int proposalRound = proposal.getRound();
 			if(proposalRound < round) return;
 			if(proposalsQueue.get(proposalRound)==null){
@@ -163,7 +163,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			for(DA_Process_RMI proc : rp){
 				executor.submit (() ->{
 								try{
-									proc.receiveNotification(message)
+									proc.receiveNotification(message);
 								}
 								catch(RemoteException rme){
 								}});
@@ -173,7 +173,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			for(DA_Process_RMI proc : rp){
 				executor.submit (() ->{
 								try{
-									proc.receiveProposal(message)
+									proc.receiveProposal(message);
 								}
 								catch(RemoteException rme){
 								}});
