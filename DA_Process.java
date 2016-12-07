@@ -29,6 +29,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	private int[] vectorClock = new int[3];
 	private static final String NAMING = "proc";
 	private boolean decided = false;
+	private boolean isDone=false;
 	private int decision;
 	private boolean ready= false;
 
@@ -97,10 +98,6 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 
 	public void receiveNotification(int round, UUID senderId, int v) throws RemoteException{
 		System.out.println("\t Received Notification");
-		if(decided){
-			System.out.println("Already decided!");
-			return;
-		}
 		Message notification = new Message(round,senderId,v);
 		int notificationRound = notification.getRound();
 		if(notificationRound < round) return;
@@ -116,6 +113,10 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 
 	public void receiveProposal(int round, UUID senderId, int v) throws RemoteException{
 		System.out.println("\t Received Proposal");
+		if(decided){
+			System.out.println("Already decided!");
+			return;
+		}
 		Message proposal = new Message(round,senderId,v);
 		int proposalRound = proposal.getRound();
 		if(proposalRound < round) return;
@@ -175,7 +176,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	public void broadcast(String type, int round, int value){
-		System.out.println("Broadcasting a "+type+" with value "+value);
+		System.out.println("Round "+round+", Broadcasting a "+type+" with value "+value);
 		Message message = new Message(round,this.id, value);
 		if(type.toLowerCase().equals("notification")){
 			for(DA_Process_RMI proc : rp){
