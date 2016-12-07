@@ -90,7 +90,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 
 	public void receiveNotification(Message notification){
 		int notificationRound = notification.getRound();
-		if(notificationRound > round) return;
+		if(notificationRound < round) return;
 		if(notificationsQueue.get(notificationRound)==null){
 			notificationsQueue.put(notificationRound,new ArrayList<Message>());
 		}
@@ -103,7 +103,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 
 	public void receiveProposal(Message proposal){
 			int proposalRound = proposal.getRound();
-			if(proposalRound > round) return;
+			if(proposalRound < round) return;
 			if(proposalsQueue.get(proposalRound)==null){
 				proposalsQueue.put(proposalRound,new ArrayList<Message>());
 			}
