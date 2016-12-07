@@ -1,0 +1,75 @@
+v = random(0,1)
+round=1
+decided=false
+f=n/5;
+w = -1;
+
+Map<round,Proposal[]> proposalsQueue = 0
+Map<round, Notification[]> notificationsQueue = 0
+
+Proposal[] proposals = 0
+Notification[] notifications = 0
+
+//we add notification to the queue and we check the condition for our round
+receiveNotification(notification){
+	notifactionRound = notification.getRound();
+	if(notificationRound < round) return;
+	notificationsQueue.get(notificationRound).add(notification)
+	if (notificationsQueue.get(round).size >= (n-f)){
+		notifications = notificationsQueue.get(round);
+		notification();
+	}
+}
+
+notification(){
+	numberOf1s = 0;
+	numberOf0s = 0;
+	for(notifications){
+		if(notifications[i] = 0) numberOfOs++;
+		if(notifications[i] = 1) numberOf1s++;
+	}
+	if(numberOf1s > ((n+f)/2)) broadcastProposal(r,1)
+	elseif(numberOf0s > ((n+f)/2)) broadcastProposal(r,0)
+	else broadcastProposal(r,-1)
+}
+
+
+receiveProposal(proposal){
+	if(decided) return;
+	proposalRound = proposal.getRound();
+	if(proposalRound < round) return;
+	proposalsQueue.get(proposalRound).add(proposal)
+	if (proposalsQueue.get(round).size >= (n-f)){
+		proposals = proposalsQueue.get(round);
+		proposal();
+	}
+}
+
+proposal(proposal, r){
+	numberOf1s = 0;
+	numberOf0s = 0;
+	for(proposals){
+		if(proposals[i] = 0) numberOfOs++;
+		if(proposals[i] = 1) numberOf1s++;
+	}
+	if(numberOf1s > f {
+		v=1
+		if (numberOf1s > 3f) {
+			w=1
+			decided=true
+		}
+	}
+	elseif(numberOf0s > f) {
+		v=0
+		if (numberOf0s > 3f) {
+			w=0
+			decided=true
+		}
+	}
+	else v=random(0,1)
+	round++
+	notificationsQueue.remove(round-1);
+	proposalsQueue.remove(round-1);
+	broadcastNotification(v)
+}
+
