@@ -10,12 +10,11 @@ public class DA_Process_main {
 		String ownIp = args[0];
 		int registryPort = Integer.parseInt(args[1]);
 		int processNumber = Integer.parseInt(args[2]);
-		int roundToBeCandidate = Integer.parseInt(args[3]);
 
 		ArrayList<String> addresses = new ArrayList<String>();
 
 		int processID = 1;
-		for (int i = 4; i < args.length; i++) {
+		for (int i = 3; i < args.length; i++) {
 			if(processID==processNumber) processID++;
 			System.out.println(args[i]);
 			addresses.add("rmi://"+args[i]+"/proc"+processID);
