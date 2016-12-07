@@ -113,30 +113,30 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 				proposal(proposalsThisRound);
 			}
 		}
-	
+
 	public void notification(ArrayList<Message> notifications){
 		int numberOf0s = 0;
 		int numberOf1s = 0;
-		
+
 		for(Message notification: notifications){
 			if(notification.getV() == 0) numberOf0s++;
-			else if(notification.getV() == 1) numberOf1s++; 
+			else if(notification.getV() == 1) numberOf1s++;
 		}
-		
+
 		if(numberOf0s > ((n+f)/2)) broadcast("notification", round, 0);
 		else if(numberOf1s > ((n+f)/2)) broadcast("notification", round, 1);
 		else broadcast("notification", round, -1);
 	}
-	
+
 	public void proposal(ArrayList<Message> proposals){
 		int numberOf0s = 0;
 		int numberOf1s = 0;
-		
+
 		for(Message proposal: proposals){
 			if(proposal.getV() == 0) numberOf0s++;
-			else if(proposal.getV() == 1) numberOf1s++; 
+			else if(proposal.getV() == 1) numberOf1s++;
 		}
-		
+
 		if(numberOf0s > f) {
 			v=0;
 			if (numberOf0s > (3*f)) {
@@ -150,15 +150,35 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 				decided=true;
 			}
 		} else v=(Math.random()<0.5)?0:1;
-		
+
 		round++;
 		notificationsQueue.remove(round-1);
 		proposalsQueue.remove(round-1);
 		broadcast("proposal", round, v);
 	}
-	
+
 	public void broadcast(String type, int round, int value){
-		
+		Message message = new Message(round,this.id, value);
+		if(type.toLowerCase().equals("notification")){
+			for(DA_Process_RMI proc : rp){
+				executor.submit (() ->{
+								try{
+									proc.receiveNotification(message)
+								}
+								catch(RemoteException rme){
+								}});
+			}
+		}
+		if(type.toLowerCase().equals("proposal")){
+			for(DA_Process_RMI proc : rp){
+				executor.submit (() ->{
+								try{
+									proc.receiveProposal(message)
+								}
+								catch(RemoteException rme){
+								}});
+			}
+		}
 	}
 
 	public boolean isReady() throws RemoteException{
