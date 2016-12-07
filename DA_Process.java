@@ -111,6 +111,53 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 				proposal(proposalsThisRound);
 			}
 		}
+	
+	public void notification(){
+		int numberOf0s = 0;
+		int numberOf1s = 0;
+		
+		for(Notification[] notification: notification){
+			if(notification.v == 0) numberOf0s++;
+			else if(notification.v == 1) numberOf1s++; 
+		}
+		
+		if(numberOf0s > ((n+f)/2)) broadcast('r',1);
+		else if(numberOf1s > ((n+f)/2)) broadcast('r', 0);
+		else broadcast('r', -1);
+	}
+	
+	public void proposal(){
+		int numberOf0s = 0;
+		int numberOf1s = 0;
+		
+		for(Proposal[] proposal: proposals){
+			if(proposal.v == 0) numberOf0s++;
+			else if(proposal.v == 1) numberOf1s++; 
+		}
+		
+		if(numberOf0s > ((n+f)/2)) {
+			v=0;
+			if (numberOf0s > (3*f)) {
+				decision=0;
+				decided=true;
+			}
+		} else if(numberOf1s > ((n+f)/2)) {
+			v=1;
+			if (numberOf1s > (3*f)) {
+				decision=1;
+				decided=true;
+			}
+		} else v=(Math.random()<0.5)?0:1;
+		
+		round++;
+		notifications.remove(round-1);
+		proposals.remove(round-1);
+		broadcast('p', v);
+	}
+	
+	public void broadcast(String type, int value){
+		
+	}
 
 	public boolean isReady() throws RemoteException{
 		return ready;
