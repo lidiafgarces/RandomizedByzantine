@@ -23,12 +23,16 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	public int number;
 	private String name;
 	private DA_Process_RMI[] rp;
+	private int n =0;
+	private int f =0;
 	public static final int FACTOR = 1;
 	private int[] vectorClock = new int[3];
 	private static final String NAMING = "proc";
 	private boolean decided = false;
 	private boolean ready= false;
 
+	private HashMap<int,ArrayList<Message>> notificationsQueue = new HashMap<int,ArrayList<Message>>();
+	private HashMap<int,ArrayList<Message>> proposalsQueue = new HashMap<int,ArrayList<Message>>();
 	private int round =0;
 
 	protected DA_Process(int n) throws RemoteException{
@@ -62,6 +66,8 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			System.out.println("polling...");
 			createProcesses(addresses);
 		}
+		this.n = rp.length;
+		this.f = (n-1)/5;
 		synchronize();
 	}
 
@@ -79,6 +85,32 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			}
 		}
 	}
+
+	public void receiveNotification(Message notification){
+		int notificationRound = notification.getRound();
+		if(notificationRound > round) return;
+		if(notificationsQueue.get(notificationRound)==null){
+			notificationsQueue.put(notificationsQueue,new ArrayList<Message>);
+		}
+		notificationsQueue.get(notificationRound).add(notification);
+		if(notificationsQueue.get(round).size()>=(n-f)){
+			ArrayList<Message> notificationsThisRound = notificationsQueue.get(round);
+			notification(notificationsThisRound);
+		}
+	}
+
+	public void receiveProposal(Message proposal){
+			int proposalRound = proposal.getRound();
+			if(proposalRound > round) return;
+			if(proposalsQueue.get(proposalRound)==null){
+				proposalsQueue.put(proposalsQueue,new ArrayList<Message>);
+			}
+			proposalsQueue.get(proposalRound).add(proposal);
+			if(proposalsQueue.get(round).size()>=(n-f)){
+				ArrayList<Message> proposalsThisRound = proposalsQueue.get(round);
+				proposal(proposalsThisRound);
+			}
+		}
 
 	public boolean isReady() throws RemoteException{
 		return ready;
