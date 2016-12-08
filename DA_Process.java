@@ -69,7 +69,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		this.v = v;
 	}
 
-	public boid setIsFaulty(boolean isFaulty){
+	public void setIsFaulty(boolean isFaulty){
 		this.isFaulty = isFaulty;
 	}
 
