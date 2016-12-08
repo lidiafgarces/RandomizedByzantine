@@ -150,10 +150,6 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		int numberOf0s = 0;
 		int numberOf1s = 0;
 
-		if(decided){
-			return;
-		}
-
 		for(Message proposal: proposals){
 			if(proposal.getV() == 0) numberOf0s++;
 			else if(proposal.getV() == 1) numberOf1s++;
@@ -232,7 +228,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 
 	public int randomDelay(){
 		int min = 0;
-		int max = 1000;
+		int max = 100;
 		int time = java.util.concurrent.ThreadLocalRandom.current().nextInt(min, max + 1);
 		try{
 			Thread.sleep(time);
