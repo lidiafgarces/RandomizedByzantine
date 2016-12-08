@@ -195,6 +195,8 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	public void broadcast(String type, int round, int value){
+		if(round ==0)
+			System.out.println("Process "+this.number+" broadcasting: "+value);
 		if(isFaulty){
 			/*if(Math.random()<0.5){
 				System.out.println("Faulty Process "+this.number+" Not Sending Anything!");
