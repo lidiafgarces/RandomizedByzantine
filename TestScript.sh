@@ -6,6 +6,7 @@ declare -i registry=1099
 
 declare -i count=0
 bg_pid=""
+faulty=false
 
 while [ $count -lt $n ]
 do
@@ -13,11 +14,13 @@ do
 	declare addresses="java DA_Process_main localhost "
     if [ "$count" -lt "$f" ]; then
 		echo "Registry: "$newRegistry", faulty process"
+		faulty=true
 	else
 		echo "Registry: "$newRegistry
+		faulty=false
 	fi
     count=$[count + 1]
-    addresses=$addresses$newRegistry" "$count
+    addresses=$addresses$newRegistry" "$count" "$faulty
     echo "The address will be:"
     echo $addresses
 
@@ -31,6 +34,7 @@ do
 	done
 	echo "The final address will be:"
     echo $addresses
+    sleep 1ms
     $addresses &
     bg_pid=$bg_pid$!" "
     echo $bg_pid
