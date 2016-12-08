@@ -2,13 +2,21 @@
 echo "How many processes should be started?: "
 read n
 
+echo "How many processes should be faulty?: "
+read numberOfFaulties
+
 echo "How many processes should have the value 0?: "
 read numberOf0
 
 echo "How many processes should have the value 1?: "
 read numberOf1
 
-declare -i f=$[(n-1)/5]
+if [ "$numberOfFaulties" -lt "0" ]; then
+	f=$[(n-1)/5]
+else
+	f=$numberOfFaulties
+fi
+
 numberOf0=$[numberOf0+f]
 numberOf1=$[numberOf1+numberOf0]
 echo "Processes 1 to "$f" will be faulty, "$[f+1]" to "$numberOf0" will start with 0, and "$[numberOf0+1]" to "$numberOf1" will start with 1"
