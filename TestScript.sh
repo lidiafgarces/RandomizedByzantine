@@ -1,4 +1,4 @@
-#!/bin/bash  
+#!/bin/bash
 echo "How many processes should be started?: "
 read n
 declare -i f=$[(n-1)/5]
@@ -34,7 +34,7 @@ do
 	done
 	echo "The final address will be:"
     echo $addresses
-    sleep 1ms
+    sleep 0.3
     $addresses &
     bg_pid=$bg_pid$!" "
     echo $bg_pid

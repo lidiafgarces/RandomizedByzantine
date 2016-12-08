@@ -150,6 +150,10 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		int numberOf0s = 0;
 		int numberOf1s = 0;
 
+		if(decided){
+			return;
+		}
+
 		for(Message proposal: proposals){
 			if(proposal.getV() == 0) numberOf0s++;
 			else if(proposal.getV() == 1) numberOf1s++;
@@ -160,7 +164,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			if (numberOf0s > (3*f)) {
 				decision=0;
 				if(!isFaulty && !decided)
-					System.out.println("Process Nr.:"+this.id+", decided on: "+0+", in Round: "+round);
+					System.out.println("Process Nr.:"+this.number+", decided on: "+0+", in Round: "+round);
 				decided=true;
 			}
 		} else if(numberOf1s > f) {
@@ -168,11 +172,10 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			if (numberOf1s > (3*f)) {
 				decision=1;
 				if(!isFaulty && !decided)
-					System.out.println("Process Nr.:"+this.id+", decided on: "+1+", in Round: "+round);
+					System.out.println("Process Nr.:"+this.number+", decided on: "+1+", in Round: "+round);
 					decided=true;
 			}
 		} else v=(Math.random()<0.5)?0:1;
-
 		round++;
 		notificationsQueue.remove(round-1);
 		proposalsQueue.remove(round-1);
@@ -228,7 +231,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 
 	public int randomDelay(){
 		int min = 0;
-		int max = 100;
+		int max = 0;
 		int time = java.util.concurrent.ThreadLocalRandom.current().nextInt(min, max + 1);
 		try{
 			Thread.sleep(time);
