@@ -10,13 +10,13 @@ public class DA_Process_main {
 		String ownIp = args[0];
 		int registryPort = Integer.parseInt(args[1]);
 		int processNumber = Integer.parseInt(args[2]);
+		boolean isFaulty = args[3].equals("true");
 
 		ArrayList<String> addresses = new ArrayList<String>();
 
 		int processID = 1;
-		for (int i = 3; i < args.length; i++) {
+		for (int i = 4; i < args.length; i++) {
 			if(processID==processNumber) processID++;
-			System.out.println(args[i]);
 			addresses.add("rmi://"+args[i]+"/proc"+processID);
 			processID++;
 		}
@@ -41,8 +41,9 @@ public class DA_Process_main {
 
 			}
 
+			localProcess.isFaulty = isFaulty;
+
 			localProcess.createProcesses(addresses);
-			System.out.println("Server is Ready");
 
 			localProcess.broadcast("notification", localProcess.getRound(), localProcess.getV() );
 
