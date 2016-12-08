@@ -44,7 +44,8 @@ public class DA_Process_main {
 
 			if(startValue<0) startValue = (Math.random()<0.5)?0:1;
 			if(startValue>0) startValue = 1;
-			localProcess.isFaulty = isFaulty;
+			localProcess.setIsFaulty(isFaulty);
+			System.out.println("Process "+processNumber+": faulty = "+isFaulty);
 			localProcess.setV(startValue);
 
 			localProcess.createProcesses(addresses);
