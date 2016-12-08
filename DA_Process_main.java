@@ -17,7 +17,6 @@ public class DA_Process_main {
 		int processID = 1;
 		for (int i = 4; i < args.length; i++) {
 			if(processID==processNumber) processID++;
-			System.out.println(args[i]);
 			addresses.add("rmi://"+args[i]+"/proc"+processID);
 			processID++;
 		}
@@ -45,7 +44,6 @@ public class DA_Process_main {
 			localProcess.isFaulty = isFaulty;
 
 			localProcess.createProcesses(addresses);
-			System.out.println("Server is Ready");
 
 			localProcess.broadcast("notification", localProcess.getRound(), localProcess.getV() );
 

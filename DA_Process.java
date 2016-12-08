@@ -79,7 +79,6 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		}
 		this.n = rp.length+1;
 		this.f = (n-1)/5;
-		System.out.println("n: "+n+", f: "+f);
 		synchronize();
 	}
 
@@ -99,7 +98,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	public void receiveNotification(int round, UUID senderId, int v) throws RemoteException{
-		System.out.println("Receiving Notification");
+		randomDelay();
 		Message notification = new Message(round,senderId,v);
 		int notificationRound = notification.getRound();
 		if(notificationRound < round) return;
@@ -114,6 +113,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	public void receiveProposal(int round, UUID senderId, int v) throws RemoteException{
+		randomDelay();
 		if(decided&&!isFaulty){
 			return;
 		}
@@ -131,6 +131,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	public void notification(ArrayList<Message> notifications){
+		randomDelay();
 		int numberOf0s = 0;
 		int numberOf1s = 0;
 
@@ -145,8 +146,13 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	public void proposal(ArrayList<Message> proposals){
+		randomDelay();
 		int numberOf0s = 0;
 		int numberOf1s = 0;
+
+		if(decided){
+			return;
+		}
 
 		for(Message proposal: proposals){
 			if(proposal.getV() == 0) numberOf0s++;
@@ -157,17 +163,17 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 			v=0;
 			if (numberOf0s > (3*f)) {
 				decision=0;
-				decided=true;
-				if(!isFaulty)
+				if(!isFaulty && !decided)
 					System.out.println("Process Nr.:"+this.id+", decided on: "+0+", in Round: "+round);
+				decided=true;
 			}
 		} else if(numberOf1s > f) {
 			v=1;
 			if (numberOf1s > (3*f)) {
 				decision=1;
-				decided=true;
-				if(!isFaulty)
+				if(!isFaulty && !decided)
 					System.out.println("Process Nr.:"+this.id+", decided on: "+1+", in Round: "+round);
+					decided=true;
 			}
 		} else v=(Math.random()<0.5)?0:1;
 
@@ -185,24 +191,27 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		Message message = new Message(round,this.id, value);
 		if(type.toLowerCase().equals("notification")){
 			for(DA_Process_RMI proc : rp){
+				randomDelay();
 				executor.submit (() ->{
-								try{
-									proc.receiveNotification(message.getRound(),message.getSenderId(),message.getV());
-								}
-								catch(RemoteException rme){
-									rme.printStackTrace();
-								}});
+					try{
+						proc.receiveNotification(message.getRound(),message.getSenderId(),message.getV());
+					}
+					catch(RemoteException rme){
+						rme.printStackTrace();
+					}});
 			}
+			randomDelay();
 			executor.submit (() ->{
-							try{
-								this.receiveNotification(message.getRound(),message.getSenderId(),message.getV());
-							}
-							catch(RemoteException rme){
-								rme.printStackTrace();
-							}});
+				try{
+					this.receiveNotification(message.getRound(),message.getSenderId(),message.getV());
+				}
+				catch(RemoteException rme){
+					rme.printStackTrace();
+				}});
 		}
 		if(type.toLowerCase().equals("proposal")){
 			for(DA_Process_RMI proc : rp){
+				randomDelay();
 				executor.submit (() ->{
 								try{
 									proc.receiveProposal(message.getRound(),message.getSenderId(),message.getV());
@@ -210,7 +219,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 								catch(RemoteException rme){
 								}});
 			}
-
+			randomDelay();
 			executor.submit (() ->{
 							try{
 								this.receiveProposal(message.getRound(),message.getSenderId(),message.getV());
@@ -221,10 +230,20 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		}
 	}
 
+	public int randomDelay(){
+		int min = 0;
+		int max = 1000;
+		int time = java.util.concurrent.ThreadLocalRandom.current().nextInt(min, max + 1);
+		try{
+			Thread.sleep(time);
+		}
+		catch(InterruptedException ie){}
+		return time;
+	}
+
 	public boolean isReady() throws RemoteException{
 		return ready;
 	}
-
 
 	private long idToLong(UUID id){
 		if(id == null) return Long.MIN_VALUE;
