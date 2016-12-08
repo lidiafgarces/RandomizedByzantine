@@ -80,7 +80,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		} catch (Exception e) {
 			long time = System.currentTimeMillis();
 			while(System.currentTimeMillis()-time <5000){}
-			System.out.println("polling...");
+			//System.out.println("polling...");
 			createProcesses(addresses);
 		}
 		this.n = rp.length+1;
@@ -89,7 +89,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	private void synchronize() throws RemoteException{
-		System.out.println("Synchronizing...");
+		System.out.println("Process "+this.number+" Synchronizing...");
 		ready = true;
 		for(DA_Process_RMI process: rp){
 			while(!process.isReady()){
@@ -243,7 +243,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 
 	public int randomDelay(){
 		int min = 0;
-		int max = 0;
+		int max = 100;
 		int time = java.util.concurrent.ThreadLocalRandom.current().nextInt(min, max + 1);
 		try{
 			Thread.sleep(time);
