@@ -16,6 +16,7 @@ broadcastNotification(v);
 receiveNotification(notification){
 	notifactionRound = notification.getRound();
 	if(notificationRound < round) return;
+	if(notificationRound == round && notificationStarted) return;
 	notificationsQueue.get(notificationRound).add(notification)
 	if (notificationsQueue.get(round).size >= (n-f)){
 		notifications = notificationsQueue.get(round);
@@ -40,6 +41,7 @@ receiveProposal(proposal){
 	if(decided) return;
 	proposalRound = proposal.getRound();
 	if(proposalRound < round) return;
+	if(proposalRound == round && proposalStarted) return;
 	proposalsQueue.get(proposalRound).add(proposal)
 	if (proposalsQueue.get(round).size >= (n-f)){
 		proposals = proposalsQueue.get(round);

@@ -34,7 +34,7 @@ do
 	done
 	echo "The final address will be:"
     echo $addresses
-    sleep 0.3
+    sleep 0.5
     $addresses &
     bg_pid=$bg_pid$!" "
     echo $bg_pid

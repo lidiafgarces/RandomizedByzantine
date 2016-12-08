@@ -33,6 +33,8 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	private boolean decided = false;
 	private int decision;
 	private boolean ready= false;
+	private boolean proposalStarted = false;
+	private boolean notificationStarted = false;
 
 	private HashMap<Integer,ArrayList<Message>> notificationsQueue = new HashMap<Integer,ArrayList<Message>>();
 	private HashMap<Integer,ArrayList<Message>> proposalsQueue = new HashMap<Integer,ArrayList<Message>>();
@@ -97,22 +99,24 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		}
 	}
 
-	public void receiveNotification(int round, UUID senderId, int v) throws RemoteException{
+	synchronized public void receiveNotification(int round, UUID senderId, int v) throws RemoteException{
 		randomDelay();
 		Message notification = new Message(round,senderId,v);
 		int notificationRound = notification.getRound();
 		if(notificationRound < round) return;
+		if(notificationStarted && notificationRound == round) return;
 		if(notificationsQueue.get(notificationRound)==null){
 			notificationsQueue.put(notificationRound,new ArrayList<Message>());
 		}
 		notificationsQueue.get(notificationRound).add(notification);
 		if(notificationsQueue.get(round).size()>=(n-f)){
-			ArrayList<Message> notificationsThisRound = notificationsQueue.get(round);
+			ArrayList<Message> notificationsThisRound = notificationsQueue.remove(round);
+			notificationStarted = true;
 			notification(notificationsThisRound);
 		}
 	}
 
-	public void receiveProposal(int round, UUID senderId, int v) throws RemoteException{
+	synchronized public void receiveProposal(int round, UUID senderId, int v) throws RemoteException{
 		randomDelay();
 		if(decided&&!isFaulty){
 			return;
@@ -120,17 +124,19 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		Message proposal = new Message(round,senderId,v);
 		int proposalRound = proposal.getRound();
 		if(proposalRound < round) return;
+		if(proposalStarted && proposalRound == round) return;
 		if(proposalsQueue.get(proposalRound)==null){
 			proposalsQueue.put(proposalRound,new ArrayList<Message>());
 		}
 		proposalsQueue.get(proposalRound).add(proposal);
 		if(proposalsQueue.get(round).size()>=(n-f)){
-			ArrayList<Message> proposalsThisRound = proposalsQueue.get(round);
+			ArrayList<Message> proposalsThisRound = proposalsQueue.remove(round);
+			proposalStarted = true;
 			proposal(proposalsThisRound);
 		}
 	}
 
-	public void notification(ArrayList<Message> notifications){
+	synchronized public void notification(ArrayList<Message> notifications){
 		randomDelay();
 		int numberOf0s = 0;
 		int numberOf1s = 0;
@@ -143,9 +149,10 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		if(numberOf0s > ((n+f)/2)) broadcast("proposal", round, 0);
 		else if(numberOf1s > ((n+f)/2)) broadcast("proposal", round, 1);
 		else broadcast("proposal", round, -1);
+		notificationStarted = false;
 	}
 
-	public void proposal(ArrayList<Message> proposals){
+	synchronized public void proposal(ArrayList<Message> proposals){
 		randomDelay();
 		int numberOf0s = 0;
 		int numberOf1s = 0;
@@ -180,6 +187,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		notificationsQueue.remove(round-1);
 		proposalsQueue.remove(round-1);
 		broadcast("notification", round, v);
+		proposalStarted = false;
 	}
 
 	public void broadcast(String type, int round, int value){
