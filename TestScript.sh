@@ -5,6 +5,7 @@ declare -i f=$[(n-1)/5]
 declare -i registry=1099
 
 declare -i count=0
+bg_pid=""
 
 while [ $count -lt $n ]
 do
@@ -31,6 +32,11 @@ do
 	echo "The final address will be:"
     echo $addresses
     $addresses &
+    bg_pid=$bg_pid$!" "
+    echo $bg_pid
 done
 
 echo "You have started "$n" processes, from which "$f" are faulty."
+
+trap "kill $bg_pid" 2 15
+wait $bg_pid
