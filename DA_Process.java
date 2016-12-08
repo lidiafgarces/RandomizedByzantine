@@ -89,7 +89,7 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 	}
 
 	private void synchronize() throws RemoteException{
-		System.out.println("Process "+this.number+" Synchronizing...");
+		//System.out.println("Process "+this.number+" Synchronizing...");
 		ready = true;
 		for(DA_Process_RMI process: rp){
 			while(!process.isReady()){
