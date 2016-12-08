@@ -65,6 +65,10 @@ public class DA_Process extends UnicastRemoteObject implements DA_Process_RMI{
 		return v;
 	}
 
+	public void setV(int v){
+		this.v = v;
+	}
+
 	public void createProcesses(ArrayList<String> addresses) throws RemoteException{
 		try {
 			rp = new DA_Process_RMI[addresses.size()];
